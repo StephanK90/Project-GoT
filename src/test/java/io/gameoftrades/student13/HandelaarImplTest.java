@@ -1,4 +1,4 @@
-package io.gameoftrades.studentNN;
+package io.gameoftrades.student13;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
