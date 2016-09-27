@@ -17,8 +17,6 @@ public class PadImpl implements Pad {
 
     int totaleTijd;
     Richting[] bewegingen;
-    Richting richtt;
-    Coordinaat huidig;
 
     public void setTotaleTijd(List<Terrein> terrein) {
         for (Terrein t : terrein) {
@@ -53,7 +51,7 @@ public class PadImpl implements Pad {
 
     @Override
     public Coordinaat volg(Coordinaat crdnt) {
-        huidig = crdnt;
+        Coordinaat huidig = crdnt;
         for (Richting beweging : bewegingen) {
             huidig = huidig.naar(beweging);
         }
