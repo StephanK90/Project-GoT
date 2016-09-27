@@ -6,14 +6,15 @@
 package io.gameoftrades.student13;
 
 import io.gameoftrades.model.kaart.*;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  *
  * @author Stephan
  */
-public class PadImpl implements Pad {    
+public class PadImpl implements Pad {
+
     int totaleTijd;
     Richting[] bewegingen;
 
@@ -39,8 +40,8 @@ public class PadImpl implements Pad {
 
     @Override
     public Pad omgekeerd() {
-        List<Richting> omgekeerd = new LinkedList<>();
-        for(int i = bewegingen.length - 1; i>=0; i--){
+        List<Richting> omgekeerd = new ArrayList<>();
+        for (int i = bewegingen.length - 1; i >= 0; i--) {
             omgekeerd.add(bewegingen[i].omgekeerd());
         }
         PadImpl pad = new PadImpl();
@@ -52,9 +53,8 @@ public class PadImpl implements Pad {
     public Coordinaat volg(Coordinaat crdnt) {
         Coordinaat huidig = crdnt;
         for (Richting beweging : bewegingen) {
-            huidig = huidig.naar(beweging); 
+            huidig = huidig.naar(beweging);
         }
-        
         return huidig;
     }
 }
