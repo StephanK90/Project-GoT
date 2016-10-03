@@ -20,6 +20,7 @@ public class WereldLaderImpl implements WereldLader {
 
             String regel;
             Kaart kaart = null;
+            Markt markt;
             int regelNummer = 0;
             int hoogte = 0;
             int breedte = 0;
@@ -88,7 +89,7 @@ public class WereldLaderImpl implements WereldLader {
             // sluit de reader
             input.close();
             // maak markt
-            Markt markt = new Markt(handel);
+            markt = new Markt(handel);
             // maak wereld
             this.wereld = new Wereld(kaart, steden, markt);
 

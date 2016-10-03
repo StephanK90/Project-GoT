@@ -19,9 +19,11 @@ public class PadImpl implements Pad {
     Richting[] bewegingen;
 
     public void setTotaleTijd(List<Terrein> terrein) {
+        int temp = 0; 
         for (Terrein t : terrein) {
-            totaleTijd += t.getTerreinType().getBewegingspunten();
+            temp += t.getTerreinType().getBewegingspunten();
         }
+        this.totaleTijd = temp;
     }
 
     @Override
