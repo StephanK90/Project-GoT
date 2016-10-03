@@ -5,6 +5,7 @@
  */
 package io.gameoftrades.student13;
 
+import io.gameoftrades.debug.*;
 import io.gameoftrades.model.algoritme.SnelstePadAlgoritme;
 import io.gameoftrades.model.kaart.*;
 import java.util.ArrayList;
@@ -15,7 +16,9 @@ import java.util.HashMap;
  *
  * @author Stephan
  */
-public class SnelstePadAlgoritmeImpl implements SnelstePadAlgoritme {
+public class SnelstePadAlgoritmeImpl implements SnelstePadAlgoritme, Debuggable {
+
+    private Debugger debug = new DummyDebugger();
 
     PadImpl pad = new PadImpl();
     HashMap<Terrein, Terrein> parents = new HashMap<>();
@@ -27,14 +30,16 @@ public class SnelstePadAlgoritmeImpl implements SnelstePadAlgoritme {
         Terrein start = kaart.getTerreinOp(crdnt);
         Terrein eind = kaart.getTerreinOp(crdnt1);
         ArrayList<Terrein> openList = new ArrayList<>();
+        HashMap<Terrein, Integer> terreinKosten = new HashMap<>();
         ArrayList<Terrein> closedList = new ArrayList<>();
         openList.add(start);
+        terreinKosten.put(start, start.getTerreinType().getBewegingspunten());
 
         while (openList.size() > 0) {
             Terrein huidig = openList.get(0);
-            for (int i = 0; i < openList.size(); i++) {
-                if (calcF(openList.get(i), eind) < calcF(huidig, eind) || calcF(openList.get(i), eind) == calcF(huidig, eind) && openList.get(i).getCoordinaat().afstandTot(crdnt1) < huidig.getCoordinaat().afstandTot(crdnt1)) {
-                    huidig = openList.get(i);
+            for (Terrein t : openList) {
+                if ((calcF(t, eind) + terreinKosten.get(t)) < (calcF(huidig, eind) + terreinKosten.get(huidig)) || (calcF(t, eind) + terreinKosten.get(t)) == (calcF(huidig, eind) + terreinKosten.get(huidig)) && t.getCoordinaat().afstandTot(crdnt1) < huidig.getCoordinaat().afstandTot(crdnt1)) {
+                    huidig = t;
                 }
             }
             openList.remove(huidig);
@@ -49,14 +54,22 @@ public class SnelstePadAlgoritmeImpl implements SnelstePadAlgoritme {
             for (Richting richting : richtingen) {
                 Terrein neighbour = kaart.kijk(huidig, richting);
                 if (closedList.contains(neighbour) || !neighbour.getTerreinType().isToegankelijk()) {
-                    // doe niets
-                } else if (!openList.contains(neighbour) && neighbour.getTerreinType().isToegankelijk()) {
-                    parents.put(neighbour, huidig);
-                    parents2.put(neighbour, richting);
-                    openList.add(neighbour);
+                    continue;
+                }
+                int nieuweKosten = terreinKosten.get(huidig) + neighbour.getTerreinType().getBewegingspunten();
+                if (nieuweKosten < neighbour.getTerreinType().getBewegingspunten() || !openList.contains(neighbour)) {
+                    if (!openList.contains(neighbour) && neighbour.getTerreinType().isToegankelijk()) {
+                        parents.put(neighbour, huidig);
+                        parents2.put(neighbour, richting);
+                        openList.add(neighbour);
+                        terreinKosten.put(neighbour, nieuweKosten);
+                    } else {
+                        terreinKosten.put(neighbour, nieuweKosten);
+                    }
                 }
             }
         }
+        debug.debugPad(kaart, crdnt, pad);
         return pad;
     }
 
@@ -84,7 +97,11 @@ public class SnelstePadAlgoritmeImpl implements SnelstePadAlgoritme {
     public double calcF(Terrein terrein, Terrein eind) {
         double g = terrein.getTerreinType().getBewegingspunten();
         double h = terrein.getCoordinaat().afstandTot(eind.getCoordinaat());
-
         return (g + h);
+    }
+
+    @Override
+    public void setDebugger(Debugger debugger) {
+        this.debug = debugger;
     }
 }

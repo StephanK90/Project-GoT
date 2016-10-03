@@ -17,13 +17,13 @@ public class PadImpl implements Pad {
 
     int totaleTijd;
     Richting[] bewegingen;
-    Richting richtt;
-    Coordinaat huidig;
 
     public void setTotaleTijd(List<Terrein> terrein) {
+        int temp = 0; 
         for (Terrein t : terrein) {
-            totaleTijd += t.getTerreinType().getBewegingspunten();
+            temp += t.getTerreinType().getBewegingspunten();
         }
+        this.totaleTijd = temp;
     }
 
     @Override
@@ -53,7 +53,7 @@ public class PadImpl implements Pad {
 
     @Override
     public Coordinaat volg(Coordinaat crdnt) {
-        huidig = crdnt;
+        Coordinaat huidig = crdnt;
         for (Richting beweging : bewegingen) {
             huidig = huidig.naar(beweging);
         }
