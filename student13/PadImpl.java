@@ -11,15 +11,17 @@ import java.util.List;
 
 /**
  *
- * @author Stephan
+ * @author Charlie
  */
 public class PadImpl implements Pad {
 
     int totaleTijd;
     Richting[] bewegingen;
+    Richting richtt;
+    Coordinaat huidig;
 
     public void setTotaleTijd(List<Terrein> terrein) {
-        int temp = 0; 
+        int temp = 0;
         for (Terrein t : terrein) {
             temp += t.getTerreinType().getBewegingspunten();
         }

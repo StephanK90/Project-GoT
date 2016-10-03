@@ -20,7 +20,6 @@ public class WereldLaderImpl implements WereldLader {
 
             String regel;
             Kaart kaart = null;
-            Markt markt;
             int regelNummer = 0;
             int hoogte = 0;
             int breedte = 0;
@@ -45,7 +44,7 @@ public class WereldLaderImpl implements WereldLader {
                     String[] letters = regel.trim().split("");
                     if (letters.length == breedte && regel.contains("Z") || regel.contains("B") || regel.contains("R") || regel.contains("S") || regel.contains("G")) {
                         for (int i = 0; i < breedte; i++) {
-                            Terrein terrein = new Terrein(kaart, Coordinaat.op(i , regelNummer - 2), TerreinType.fromLetter(letters[i].charAt(0)));
+                            Terrein terrein = new Terrein(kaart, Coordinaat.op(i, regelNummer - 2), TerreinType.fromLetter(letters[i].charAt(0)));
                         }
                     } else {
                         throw new IllegalArgumentException();
@@ -62,7 +61,7 @@ public class WereldLaderImpl implements WereldLader {
                     int x = Integer.parseInt(split[0]);
                     int y = Integer.parseInt(split[1]);
                     if ((x > 0 && y > 0) && (x <= breedte && y <= hoogte)) {
-                        steden.add(new Stad(Coordinaat.op(x-1, y-1), split[2]));
+                        steden.add(new Stad(Coordinaat.op(x - 1, y - 1), split[2]));
                     } else {
                         throw new IllegalArgumentException();
                     }
@@ -89,7 +88,7 @@ public class WereldLaderImpl implements WereldLader {
             // sluit de reader
             input.close();
             // maak markt
-            markt = new Markt(handel);
+            Markt markt = new Markt(handel);
             // maak wereld
             this.wereld = new Wereld(kaart, steden, markt);
 

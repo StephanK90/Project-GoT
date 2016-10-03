@@ -14,7 +14,7 @@ import java.util.HashMap;
 
 /**
  *
- * @author Stephan
+ * @author Charlie
  */
 public class SnelstePadAlgoritmeImpl implements SnelstePadAlgoritme, Debuggable {
 
