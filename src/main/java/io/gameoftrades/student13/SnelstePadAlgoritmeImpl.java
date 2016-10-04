@@ -19,48 +19,47 @@ import java.util.HashMap;
 public class SnelstePadAlgoritmeImpl implements SnelstePadAlgoritme, Debuggable {
 
     private Debugger debug = new DummyDebugger();
-
-    PadImpl pad = new PadImpl();
-    HashMap<Terrein, Terrein> parents = new HashMap<>();
-    HashMap<Terrein, Richting> parents2 = new HashMap<>();
+    private Kaart kaart;
+    private PadImpl pad = new PadImpl();
+    private HashMap<Coordinaat, Coordinaat> parents = new HashMap<>();
 
     @Override
     public Pad bereken(Kaart kaart, Coordinaat crdnt, Coordinaat crdnt1) {
 
-        Terrein start = kaart.getTerreinOp(crdnt);
-        Terrein eind = kaart.getTerreinOp(crdnt1);
-        ArrayList<Terrein> openList = new ArrayList<>();
-        HashMap<Terrein, Integer> terreinKosten = new HashMap<>();
-        ArrayList<Terrein> closedList = new ArrayList<>();
+        this.kaart = kaart;
+        Coordinaat start = crdnt;
+        Coordinaat eind = crdnt1;
+        ArrayList<Coordinaat> openList = new ArrayList<>();
+        ArrayList<Coordinaat> closedList = new ArrayList<>();
         openList.add(start);
-        terreinKosten.put(start, start.getTerreinType().getBewegingspunten());
+        HashMap<Coordinaat, Integer> terreinKosten = new HashMap<>();
+        terreinKosten.put(start, kaart.getTerreinOp(start).getTerreinType().getBewegingspunten());
 
         while (openList.size() > 0) {
-            Terrein huidig = openList.get(0);
-            for (Terrein t : openList) {
-                if ((calcF(t, eind) + terreinKosten.get(t)) < (calcF(huidig, eind) + terreinKosten.get(huidig)) || (calcF(t, eind) + terreinKosten.get(t)) == (calcF(huidig, eind) + terreinKosten.get(huidig)) && t.getCoordinaat().afstandTot(crdnt1) < huidig.getCoordinaat().afstandTot(crdnt1)) {
-                    huidig = t;
+            Coordinaat huidig = openList.get(0);
+            for (Coordinaat c : openList) {
+                if ((calcF(c, eind) + terreinKosten.get(c)) < (calcF(huidig, eind) + terreinKosten.get(huidig)) || (calcF(c, eind) + terreinKosten.get(c)) == (calcF(huidig, eind) + terreinKosten.get(huidig)) && c.afstandTot(crdnt1) < huidig.afstandTot(crdnt1)) {
+                    huidig = c;
                 }
             }
             openList.remove(huidig);
             closedList.add(huidig);
 
-            if (huidig == eind) {
+            if (huidig.equals(eind)) {
                 hetPad(start, eind);
                 break;
             }
 
-            Richting[] richtingen = huidig.getMogelijkeRichtingen();
+            Richting[] richtingen = kaart.getTerreinOp(huidig).getMogelijkeRichtingen();
             for (Richting richting : richtingen) {
-                Terrein neighbour = kaart.kijk(huidig, richting);
-                if (closedList.contains(neighbour) || !neighbour.getTerreinType().isToegankelijk()) {
+                Coordinaat neighbour = huidig.naar(richting);
+                if (closedList.contains(neighbour) || !kaart.getTerreinOp(neighbour).getTerreinType().isToegankelijk()) {
                     continue;
                 }
-                int nieuweKosten = terreinKosten.get(huidig) + neighbour.getTerreinType().getBewegingspunten();
-                if (nieuweKosten < neighbour.getTerreinType().getBewegingspunten() || !openList.contains(neighbour)) {
-                    if (!openList.contains(neighbour) && neighbour.getTerreinType().isToegankelijk()) {
+                int nieuweKosten = terreinKosten.get(huidig) + kaart.getTerreinOp(neighbour).getTerreinType().getBewegingspunten();
+                if (nieuweKosten < kaart.getTerreinOp(neighbour).getTerreinType().getBewegingspunten() || !openList.contains(neighbour)) {
+                    if (!openList.contains(neighbour) && kaart.getTerreinOp(neighbour).getTerreinType().isToegankelijk()) {
                         parents.put(neighbour, huidig);
-                        parents2.put(neighbour, richting);
                         openList.add(neighbour);
                         terreinKosten.put(neighbour, nieuweKosten);
                     } else {
@@ -73,30 +72,30 @@ public class SnelstePadAlgoritmeImpl implements SnelstePadAlgoritme, Debuggable 
         return pad;
     }
 
-    public void hetPad(Terrein start, Terrein eind) {
-        ArrayList<Terrein> terreinen = new ArrayList<>();
-        ArrayList<Richting> bewegingen = new ArrayList<>();
-        Terrein current = eind;
+    public void hetPad(Coordinaat start, Coordinaat eind) {
+        ArrayList<Coordinaat> coordinaten = new ArrayList<>();
+        Coordinaat current = eind;
 
-        while (current != start) {
-            terreinen.add(current);
-            bewegingen.add(parents2.get(current));
+        while (!current.equals(start)) {
+            coordinaten.add(current);
             current = parents.get(current);
         }
-        Collections.reverse(terreinen);
-        Collections.reverse(bewegingen);
+        coordinaten.add(start);
+        Collections.reverse(coordinaten);
 
-        Richting[] richtingen = new Richting[bewegingen.size()];
-        for (int i = 0; i < bewegingen.size(); i++) {
-            richtingen[i] = bewegingen.get(i);
+        ArrayList terreinen = new ArrayList<>();
+        Richting[] richtingen = new Richting[coordinaten.size() - 1];
+        for (int i = 0; i < coordinaten.size() - 1; i++) {
+            terreinen.add(kaart.getTerreinOp(coordinaten.get(i + 1)));
+            richtingen[i] = Richting.tussen(coordinaten.get(i), coordinaten.get(i + 1));
         }
         pad.setTotaleTijd(terreinen);
         pad.setBewegingen(richtingen);
     }
 
-    public double calcF(Terrein terrein, Terrein eind) {
-        double g = terrein.getTerreinType().getBewegingspunten();
-        double h = terrein.getCoordinaat().afstandTot(eind.getCoordinaat());
+    public double calcF(Coordinaat huidig, Coordinaat eind) {
+        double g = kaart.getTerreinOp(huidig).getTerreinType().getBewegingspunten();
+        double h = huidig.afstandTot(eind);
         return (g + h);
     }
 
