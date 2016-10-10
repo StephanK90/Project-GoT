@@ -33,7 +33,7 @@ public class SnelstePadAlgoritmeImpl implements SnelstePadAlgoritme, Debuggable 
         ArrayList<Coordinaat> closedList = new ArrayList<>();
         openList.add(start);
         HashMap<Coordinaat, Integer> terreinKosten = new HashMap<>();
-        terreinKosten.put(start, kaart.getTerreinOp(start).getTerreinType().getBewegingspunten());
+        terreinKosten.put(start, kaart.getTerreinOp(start).getTerreinType().getBewegingspunten() * 10);
 
         while (openList.size() > 0) {
             Coordinaat huidig = openList.get(0);
@@ -56,8 +56,8 @@ public class SnelstePadAlgoritmeImpl implements SnelstePadAlgoritme, Debuggable 
                 if (closedList.contains(neighbour) || !kaart.getTerreinOp(neighbour).getTerreinType().isToegankelijk()) {
                     continue;
                 }
-                int nieuweKosten = terreinKosten.get(huidig) + kaart.getTerreinOp(neighbour).getTerreinType().getBewegingspunten();
-                if (nieuweKosten < kaart.getTerreinOp(neighbour).getTerreinType().getBewegingspunten() || !openList.contains(neighbour)) {
+                int nieuweKosten = terreinKosten.get(huidig) + kaart.getTerreinOp(neighbour).getTerreinType().getBewegingspunten() * 10;
+                if (nieuweKosten < kaart.getTerreinOp(neighbour).getTerreinType().getBewegingspunten() * 10 || !openList.contains(neighbour)) {
                     if (!openList.contains(neighbour) && kaart.getTerreinOp(neighbour).getTerreinType().isToegankelijk()) {
                         parents.put(neighbour, huidig);
                         openList.add(neighbour);
@@ -93,10 +93,10 @@ public class SnelstePadAlgoritmeImpl implements SnelstePadAlgoritme, Debuggable 
         pad.setBewegingen(richtingen);
     }
 
-    public double calcF(Coordinaat huidig, Coordinaat eind) {
-        double g = kaart.getTerreinOp(huidig).getTerreinType().getBewegingspunten();
-        double h = huidig.afstandTot(eind);
-        return (g + h);
+    public int calcF(Coordinaat huidig, Coordinaat eind) {
+        int x = Math.abs(huidig.getX() - eind.getX());
+        int y = Math.abs(huidig.getY() - eind.getY());
+        return (x + y);
     }
 
     @Override
