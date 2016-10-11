@@ -9,6 +9,7 @@ import io.gameoftrades.model.Wereld;
 import io.gameoftrades.model.algoritme.HandelsplanAlgoritme;
 import io.gameoftrades.model.markt.Handelsplan;
 import io.gameoftrades.model.markt.actie.HandelsPositie;
+import io.gameoftrades.model.markt.actie.KoopActie;
 
 /**
  *
@@ -18,7 +19,7 @@ public class HandelsplanAlgoritmeImpl implements HandelsplanAlgoritme{
 
     @Override
     public Handelsplan bereken(Wereld wereld, HandelsPositie hp) {
-        return null;
+       return null;
     }
     
 }
