@@ -51,6 +51,6 @@ public class HandelaarImpl implements Handelaar {
     @Override
     public HandelsplanAlgoritme nieuwHandelsplanAlgoritme() {
         // TODO Auto-generated method stub
-        return null;
+        return new HandelsplanAlgoritmeImpl();
     }
 }
