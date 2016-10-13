@@ -28,6 +28,7 @@ public class WereldLaderImpl implements WereldLader {
             int aantalMarkt = 0;
             ArrayList<Stad> steden = new ArrayList<>();
             ArrayList<Handel> handel = new ArrayList<>();
+            
 
             // leest de txt file zolang er regels zijn
             while ((regel = br.readLine()) != null) {
