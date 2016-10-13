@@ -15,8 +15,8 @@ public class WereldLaderImpl implements WereldLader {
     private int breedte = 0;
     private String regel;
     private Kaart kaart = null;
-    private ArrayList<Stad> steden = new ArrayList<>();
-    private ArrayList<Handel> handel = new ArrayList<>();
+    private final ArrayList<Stad> steden = new ArrayList<>();
+    private final ArrayList<Handel> handel = new ArrayList<>();
     private InputStream input;
 
     @Override
@@ -71,7 +71,7 @@ public class WereldLaderImpl implements WereldLader {
 
             input.close();                                                      // sluit de reader
         } catch (IOException ex) {
-            //niks
+            System.out.println("Fout bij het lezen van de text file");
         }
     }
 
@@ -91,7 +91,7 @@ public class WereldLaderImpl implements WereldLader {
                 Terrein terrein = new Terrein(kaart, Coordinaat.op(i, regelNummer - 2), TerreinType.fromLetter(letters[i].charAt(0)));
             }
         } else {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("De grootte en breedte van de kaart kloppen niet");
         }
     }
 
@@ -103,7 +103,7 @@ public class WereldLaderImpl implements WereldLader {
         if ((x > 0 && y > 0) && (x <= breedte && y <= hoogte)) {
             steden.add(new Stad(Coordinaat.op(x - 1, y - 1), split[2]));
         } else {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Fout bij lezen van de steden");
         }
     }
 
@@ -115,7 +115,7 @@ public class WereldLaderImpl implements WereldLader {
                 handel.add(new Handel(steden.get(i), HandelType.valueOf(split[1]), new Handelswaar(split[2]), Integer.parseInt(split[3])));
                 break;
             } else if ((!split[0].equalsIgnoreCase(steden.get(i).getNaam())) && (i + 1 == steden.size())) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Fout bij het lezen van de markt");
             }
         }
     }
