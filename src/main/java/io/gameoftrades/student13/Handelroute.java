@@ -1,69 +1,74 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package io.gameoftrades.student13;
 
 import io.gameoftrades.model.kaart.*;
 import io.gameoftrades.model.markt.Handel;
-import io.gameoftrades.model.markt.Handelswaar;
 
+/**
+ *
+ * @author Stephan
+ */
 public class Handelroute implements Comparable<Handelroute> {
 
-    private final SnelstePadAlgoritmeImpl snelstePadTussenSteden = new SnelstePadAlgoritmeImpl();
-    private final Pad padTussenSteden;
-    private Pad padNaarBegin;
-    private final Handel aanbod;
-    private final Handel vraag;
+    private final SnelstePadAlgoritmeImpl snelstePad = new SnelstePadAlgoritmeImpl();           // snelstepadalgoritme om pad tussen de 2 steden te berekenen
+    private final Pad padTussenSteden;                                                          // het pad tussen de 2 steden
+    private Pad padNaarBegin;                                                                   // het pad naar de stad met de aanbod
+    private final Handel aanbod;                                                                // de aanbod
+    private final Handel vraag;                                                                 // de vraag
 
-    public Handelroute(Kaart kaart, Handel aanbod, Handel vraag) {       
+    // constructor
+    public Handelroute(Kaart kaart, Handel aanbod, Handel vraag) {
         this.aanbod = aanbod;
         this.vraag = vraag;
-        this.padTussenSteden = snelstePadTussenSteden.bereken(kaart, aanbod.getStad().getCoordinaat(), vraag.getStad().getCoordinaat());
+        this.padTussenSteden = snelstePad.bereken(kaart, aanbod.getStad().getCoordinaat(), vraag.getStad().getCoordinaat());
     }
 
-    public Stad getStartPunt() {
-        return this.aanbod.getStad();
-    }
-
-    public Stad getEindPunt() {
-        return this.vraag.getStad();
-    }
-    
+    // returned het aanbod
     public Handel getAanbod() {
         return this.aanbod;
     }
-    
+
+    // returned de vraag
     public Handel getVraag() {
         return this.vraag;
     }
 
-    public Handelswaar getHandelswaar() {
-        return this.aanbod.getHandelswaar();
-    }
-
+    // returned de totale tijd (tijd tussen de handelsteden + tijd van huidige positie naar stad met aanbod)
     public int getRouteTijd() {
         int tijd = this.padNaarBegin.getTotaleTijd() + this.padTussenSteden.getTotaleTijd();
         return tijd;
     }
-    
+
+    // zet het pad naar de stad met het aanbod
     public void setPadNaarBegin(Pad pad) {
         this.padNaarBegin = pad;
     }
-    
+
+    // returned het pad naar stad met de aanbod
     public Pad getPadNaarBegin() {
         return this.padNaarBegin;
     }
-    
+
+    // returned het pad tussen de 2 steden
     public Pad getPadTussenSteden() {
         return this.padTussenSteden;
     }
 
+    // berekent de score voor de handelroute qua opbrengst en tijdsduur
     public double berekenHandelScore(int kapitaal, int capaciteit) {
-        int maxAantal = (int) Math.floor(kapitaal / this.aanbod.getPrijs());
+        double maxAantal = (int) Math.floor(kapitaal / this.aanbod.getPrijs());                 // berekent het max aantal producten die gekocht kunnen worden
         if (maxAantal > capaciteit) {
             maxAantal = capaciteit;
         } else if (maxAantal < 0) {
             maxAantal = 0;
         }
-        double efficientie = (maxAantal * (this.vraag.getPrijs() - this.aanbod.getPrijs())) / getRouteTijd();
-        return efficientie;
+        // bereken de handelscore
+        double score = (maxAantal * (this.vraag.getPrijs() - this.aanbod.getPrijs())) / getRouteTijd();
+        return score;
     }
 
     @Override
