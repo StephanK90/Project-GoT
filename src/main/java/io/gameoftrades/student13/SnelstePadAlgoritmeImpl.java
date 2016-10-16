@@ -29,7 +29,7 @@ public class SnelstePadAlgoritmeImpl implements SnelstePadAlgoritme, Debuggable 
         ArrayList<Coordinaat> closedList = new ArrayList<>();                                   // lijst met coordinaten die al bezocht zijn
         openList.add(start);                                                                    // voeg de start coordinaat toe aan de openList
         HashMap<Coordinaat, Integer> terreinKosten = new HashMap<>();                           // map waarin ge-updatete terreinkosten in opgeslagen worden
-        terreinKosten.put(start, nieuweBewegingsKosten(kaart, start));                          // voeg start toe aan map met terreinkosten
+        terreinKosten.put(start, bewegingsKosten(kaart, start) + afstand(start, eind));         // voeg start toe aan map met terreinkosten
 
         // voer uit zolang de openList nog coordinaten bevat
         while (openList.size() > 0) {
@@ -37,9 +37,7 @@ public class SnelstePadAlgoritmeImpl implements SnelstePadAlgoritme, Debuggable 
 
             // zoek de coordinaat met de laagste kosten en zet deze als huidig
             for (Coordinaat c : openList) {
-                if ((afstand(c, eind) + terreinKosten.get(c)) < (afstand(huidig, eind) + terreinKosten.get(huidig))
-                        || ((afstand(c, eind) + terreinKosten.get(c)) == (afstand(huidig, eind) 
-                        + terreinKosten.get(huidig)) && afstand(c, eind) < afstand(huidig, eind))) {
+                if (terreinKosten.get(c) < terreinKosten.get(huidig) || terreinKosten.get(c).equals(terreinKosten.get(huidig)) && afstand(c, eind) < afstand(huidig, eind)) {
                     huidig = c;
                 }
             }
@@ -63,7 +61,7 @@ public class SnelstePadAlgoritmeImpl implements SnelstePadAlgoritme, Debuggable 
                 }
 
                 // bereken (nieuwe) kosten voor neighbour
-                int nieuweKosten = terreinKosten.get(huidig) + nieuweBewegingsKosten(kaart, neighbour);
+                int nieuweKosten = (terreinKosten.get(huidig) - afstand(huidig, eind)) + (bewegingsKosten(kaart, neighbour) + afstand(neighbour, eind));
 
                 // vergelijk nieuwe kosten met oude kosten
                 if (terreinKosten.containsKey(neighbour) && nieuweKosten < terreinKosten.get(neighbour) || !openList.contains(neighbour)) {
@@ -74,6 +72,7 @@ public class SnelstePadAlgoritmeImpl implements SnelstePadAlgoritme, Debuggable 
                         openList.add(neighbour);                                                // voeg neighbour toe aan de openList
                         terreinKosten.put(neighbour, nieuweKosten);                             // voeg neighbour toe aan de terreinkosten map
                     } else {
+                        parents.put(neighbour, huidig);                                         // update de parent van de neighbour
                         terreinKosten.put(neighbour, nieuweKosten);                             // update de kosten van neighbour
                     }
                 }
@@ -120,8 +119,8 @@ public class SnelstePadAlgoritmeImpl implements SnelstePadAlgoritme, Debuggable 
     }
 
     // nieuwe bewegingskosten om terreinsoort hoger af te wegen tegen afstand
-    public int nieuweBewegingsKosten(Kaart kaart, Coordinaat c) {
-        return kaart.getTerreinOp(c).getTerreinType().getBewegingspunten() * 10;
+    public int bewegingsKosten(Kaart kaart, Coordinaat c) {
+        return kaart.getTerreinOp(c).getTerreinType().getBewegingspunten();
     }
 
     // debugger
