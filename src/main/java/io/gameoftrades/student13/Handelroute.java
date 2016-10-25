@@ -12,13 +12,14 @@ import io.gameoftrades.model.markt.Handel;
  *
  * @author Stephan
  */
-public class Handelroute implements Comparable<Handelroute> {
+public class Handelroute {
 
     private final SnelstePadAlgoritmeImpl snelstePad = new SnelstePadAlgoritmeImpl();           // snelstepadalgoritme om pad tussen de 2 steden te berekenen
     private final Pad padTussenSteden;                                                          // het pad tussen de 2 steden
     private Pad padNaarBegin;                                                                   // het pad naar de stad met de aanbod
     private final Handel aanbod;                                                                // de aanbod
     private final Handel vraag;                                                                 // de vraag
+    private double score;
 
     // constructor
     public Handelroute(Kaart kaart, Handel aanbod, Handel vraag) {
@@ -39,8 +40,11 @@ public class Handelroute implements Comparable<Handelroute> {
 
     // returned de totale tijd (tijd tussen de handelsteden + tijd van huidige positie naar stad met aanbod)
     public int getRouteTijd() {
-        int tijd = this.padNaarBegin.getTotaleTijd() + this.padTussenSteden.getTotaleTijd();
-        return tijd;
+        if (this.padNaarBegin == null) {
+            return this.padTussenSteden.getTotaleTijd();
+        } else {
+            return this.padNaarBegin.getTotaleTijd() + this.padTussenSteden.getTotaleTijd();
+        }
     }
 
     // zet het pad naar de stad met het aanbod
@@ -58,6 +62,10 @@ public class Handelroute implements Comparable<Handelroute> {
         return this.padTussenSteden;
     }
 
+    public double getScore() {
+        return this.score;
+    }
+
     // berekent de score voor de handelroute qua opbrengst en tijdsduur
     public double berekenHandelScore(int kapitaal, int capaciteit) {
         double maxAantal = (int) Math.floor(kapitaal / this.aanbod.getPrijs());                 // berekent het max aantal producten die gekocht kunnen worden
@@ -67,18 +75,10 @@ public class Handelroute implements Comparable<Handelroute> {
             maxAantal = 0;
         }
         // bereken de handelscore
-        double score = (maxAantal * (this.vraag.getPrijs() - this.aanbod.getPrijs())) / getRouteTijd();
-        return score;
-    }
-
-    @Override
-    public int compareTo(Handelroute o) {
-        if ((o.getVraag().getPrijs() - o.getAanbod().getPrijs()) < (this.vraag.getPrijs() - this.aanbod.getPrijs())) {
-            return -1;
-        } else if (o.getRouteTijd() == this.getRouteTijd()) {
-            return 0;
-        } else {
-            return 1;
-        }
+        double winst = this.vraag.getPrijs() - this.aanbod.getPrijs();
+        double totaleWinst = maxAantal * winst;
+        double handelScore = totaleWinst / getRouteTijd();
+        this.score = handelScore;
+        return handelScore;
     }
 }

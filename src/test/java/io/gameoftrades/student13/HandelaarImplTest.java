@@ -50,12 +50,12 @@ public class HandelaarImplTest {
 
     @Test
     public void zouEenPadMoetenVinden() {
-        Wereld wereld = handelaar.nieuweWereldLader().laad("/kaarten/westeros-kaart.txt");
+        Wereld wereld = handelaar.nieuweWereldLader().laad("/kaarten/voorbeeld-kaart.txt");
         assertNotNull(wereld);
         
         Kaart kaart = wereld.getKaart();
         Stad van = wereld.getSteden().get(0);
-        Stad naar = wereld.getSteden().get(18);
+        Stad naar = wereld.getSteden().get(1);
 
         SnelstePadAlgoritme algoritme = handelaar.nieuwSnelstePadAlgoritme();
         assertNotNull(algoritme);
