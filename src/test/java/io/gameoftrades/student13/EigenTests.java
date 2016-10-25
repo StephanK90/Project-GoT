@@ -102,10 +102,10 @@ public class EigenTests {
         Coordinaat crdnt2 = Coordinaat.op(7, 1);
 
         // maak SnelstePadAlgoritme
-        SnelstePadAlgoritmeImpl snelstePad = new SnelstePadAlgoritmeImpl();
+        StedenTourAlgoritmeImpl tour = new StedenTourAlgoritmeImpl();
 
         // bereken afstand
-        int afstand = snelstePad.afstand(crdnt1, crdnt2);
+        int afstand = tour.afstand(crdnt1, crdnt2);
 
         // check of afstand klopt
         assertEquals(12, afstand);
