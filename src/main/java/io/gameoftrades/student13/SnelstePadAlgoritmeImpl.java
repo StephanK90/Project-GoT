@@ -86,7 +86,6 @@ public class SnelstePadAlgoritmeImpl implements SnelstePadAlgoritme, Debuggable 
             }
             terreinKosten.remove(huidigeCrdnt);                                                         // verwijder huidigeCrdnt coordinaat uit de map met terreinkosten
         }
-        System.out.println(pad.getTotaleTijd());
         // set debugger om algoritme visueel zichtbaar te maken
         debug.debugPad(kaart, start, pad);
 

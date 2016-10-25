@@ -20,12 +20,12 @@ import java.util.ArrayList;
 public class HandelsplanAlgoritmeImpl implements HandelsplanAlgoritme {
 
     private ArrayList<Handelroute> handelroutes;                                                // lijst waar alle handelroutes in worden opgeslagen
-    private Handelroute besteRoute = null;                                                      // hierin wordt de best mogelijke route in opgeslagen
 
     @Override
     public Handelsplan bereken(Wereld wereld, HandelsPositie positie) {
 
         ArrayList<Actie> acties = new ArrayList<>();                                            // lijst waar alle acties in worden opgeslagen
+        Handelroute besteRoute;
 
         // maak de handelroutes
         handelroutes = maakHandelroutes(wereld);                                                // maak handelroutes
@@ -33,7 +33,7 @@ public class HandelsplanAlgoritmeImpl implements HandelsplanAlgoritme {
         // voer uit zolang er nog acties zijn
         while (positie.getMaxActie() != 0) {
 
-            getBestMogelijkeRoute(wereld, positie);                                             // haal de best mogelijke route op
+            besteRoute = getBestMogelijkeRoute(wereld, positie);                                // haal de best mogelijke route op
 
             // als besteRoute nog steeds null is, dan stop 
             if (besteRoute == null) {
@@ -41,32 +41,29 @@ public class HandelsplanAlgoritmeImpl implements HandelsplanAlgoritme {
             }
 
             // navigeer naar de stad waar handel gekocht moet worden
-            for (Richting richting : this.besteRoute.getPadNaarBegin().getBewegingen()) {
+            for (Richting richting : besteRoute.getPadNaarBegin().getBewegingen()) {
                 NavigeerActie navigeer = new NavigeerActie(positie.getCoordinaat(), richting);
                 positie = navigeer.voerUit(positie);
                 acties.add(navigeer);
             }
 
             // koop de handel
-            KoopActie koop = new KoopActie(this.besteRoute.getAanbod());
+            KoopActie koop = new KoopActie(besteRoute.getAanbod());
             positie = koop.voerUit(positie);
             acties.add(koop);
 
             // beweeg naar de stad waar de handel verkocht moet worden
-            Stad van = this.besteRoute.getAanbod().getStad();                                   // begin stad
-            Stad naar = this.besteRoute.getVraag().getStad();                                   // eind stad
-            Pad pad = this.besteRoute.getPadTussenSteden();                                     // pad tussen de steden
+            Stad van = besteRoute.getAanbod().getStad();                                        // begin stad
+            Stad naar = besteRoute.getVraag().getStad();                                        // eind stad
+            Pad pad = besteRoute.getPadTussenSteden();                                          // pad tussen de steden
             BeweegActie beweegActie = new BeweegActie(wereld.getKaart(), van, naar, pad);
             positie = beweegActie.voerUit(positie);
             acties.addAll(beweegActie.naarNavigatieActies());
 
             // verkoop de handel
-            VerkoopActie verkoop = new VerkoopActie(this.besteRoute.getVraag());
+            VerkoopActie verkoop = new VerkoopActie(besteRoute.getVraag());
             positie = verkoop.voerUit(positie);
             acties.add(verkoop);
-
-            //zet besteRoute weer op null
-            this.besteRoute = null;
         }
         // return het handelsplan
         return new Handelsplan(acties);
@@ -94,7 +91,8 @@ public class HandelsplanAlgoritmeImpl implements HandelsplanAlgoritme {
     }
 
     // haalt de best mogelijke route uit de lijst en slaat deze op als besteRoute
-    public void getBestMogelijkeRoute(Wereld wereld, HandelsPositie positie) {        
+    public Handelroute getBestMogelijkeRoute(Wereld wereld, HandelsPositie positie) {
+        Handelroute beste = null;
         for (int i = 0; i < handelroutes.size(); i++) {
             Handelroute huidig = handelroutes.get(i);
 
@@ -110,10 +108,11 @@ public class HandelsplanAlgoritmeImpl implements HandelsplanAlgoritme {
                 double handelScore = huidig.berekenHandelScore(positie.getKapitaal(), positie.getRuimte());
 
                 // als besteRoute nog null is of huidige route is beter dan de besteRoute, zet huidige route als besteRoute
-                if (this.besteRoute == null || handelScore > this.besteRoute.getScore()) {
-                    this.besteRoute = huidig;
+                if (beste == null || handelScore > beste.getScore()) {
+                    beste = huidig;
                 }
             }
         }
+        return beste;
     }
 }
