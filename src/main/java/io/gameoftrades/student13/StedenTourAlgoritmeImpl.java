@@ -9,6 +9,9 @@ import java.util.List;
 public class StedenTourAlgoritmeImpl implements StedenTourAlgoritme, Debuggable {
 
     private Debugger debug = new DummyDebugger();                                                   // debugger
+    private ArrayList<Stad> stedenKortst = null;                                                    // List met steden van de kortste route
+    private int kortsteTourTijd = 0;                                                                // tijd van de kortste route
+    private Kaart map;                                                                              // kaart
     private long startTime;
     private long stopTime;
 
@@ -16,18 +19,16 @@ public class StedenTourAlgoritmeImpl implements StedenTourAlgoritme, Debuggable 
     @Override
     public List<Stad> bereken(Kaart kaart, List<Stad> steden) {
 
+        this.map = kaart;                                                                           // zet kaart
         SnelstePadAlgoritmeImpl snelstePad = new SnelstePadAlgoritmeImpl();                         // om het snelstePad naar een stad te berekenen
         Coordinaat huidigeStad;                                                                     // huidig coordinaat
         Stad bezochteStad = null;                                                                   // stad die bezocht is
-        int kortsteTourTijd = 0;                                                                    // tijd van het korste stedentourpad
-        int huidigeTourTijd = 0;                                                                    // tijd van het huidige stedentourpad
+        int huidigeTourTijd = 0;                                                                    // orgineleRouteTijd van het huidige stedentourpad
         int stadIndex = 0;                                                                          // index nummer van de te bezoeken stad                                                                                                                                  
-        int tijdVanKortstePad = 0;                                                                  // tijd van het pad tussen 2 steden
+        int tijdVanKortstePad = 0;                                                                  // orgineleRouteTijd van het snelste tussen 2 steden
         ArrayList<Stad> stedenHuidig;                                                               // lijst met steden van huidige stedentour
-        ArrayList<Stad> stedenKortst = null;                                                        // lijst met steden van kortste stedentour
         ArrayList<Stad> teBezoekenSteden;                                                           // lijst met steden die nog niet bezocht zijn
         startTime = System.currentTimeMillis();
-        int aantalBerekendePaden = 0;
 
         // loop door de lijst met steden gebruik iedere stad een keer als startpunt
         for (int i = 0; i < steden.size(); i++) {
@@ -43,16 +44,15 @@ public class StedenTourAlgoritmeImpl implements StedenTourAlgoritme, Debuggable 
             while (!teBezoekenSteden.isEmpty() && checkRouteTijd == true) {
                 Stad teBezoekenStad = teBezoekenSteden.get(stadIndex);
 
-                // check of directe afstand korter is dan korste pad tussen steden
+                // check of directe afstand korter is dan korste snelste tussen steden
                 if (tijdVanKortstePad == 0 || afstand(huidigeStad, teBezoekenStad.getCoordinaat()) <= tijdVanKortstePad) {
 
-                    // bereken tijd van huidige stad naar volgende stad
+                    // bereken orgineleRouteTijd van huidige stad naar volgende stad
                     Pad pad = snelstePad.bereken(kaart, huidigeStad, teBezoekenStad.getCoordinaat());
-                    aantalBerekendePaden++;
 
-                    // check of er al een pad is opgeslagen of dat huidige pad kleine is als korste
+                    // check of er al een snelste is opgeslagen of dat huidige snelste kleine is als korste
                     if (tijdVanKortstePad == 0 || pad.getTotaleTijd() < tijdVanKortstePad) {
-                        tijdVanKortstePad = pad.getTotaleTijd();                                    // zet de tijd van het pad
+                        tijdVanKortstePad = pad.getTotaleTijd();                                    // zet de orgineleRouteTijd van het snelste
                         bezochteStad = teBezoekenStad;                                              // zet de bezochteStad
                     }
                 } else {
@@ -61,12 +61,12 @@ public class StedenTourAlgoritmeImpl implements StedenTourAlgoritme, Debuggable 
 
                 // check of stadIndex gelijk is aan teBezoekenSteden size - 1
                 if (stadIndex == teBezoekenSteden.size() - 1) {
-                    huidigeTourTijd += tijdVanKortstePad;                                           // tel tijd van berekende pad op bij de tijd van de huidige tour 
+                    huidigeTourTijd += tijdVanKortstePad;                                           // tel orgineleRouteTijd van berekende snelste op bij de orgineleRouteTijd van de huidige tour 
                     stedenHuidig.add(bezochteStad);                                                 // sla de bezochte stad op in de huidige steden list
                     huidigeStad = bezochteStad.getCoordinaat();                                     // zet bezochte stad als de nieuwe huidige stad
                     teBezoekenSteden.remove(bezochteStad);                                          // verwijder de bezochte stad uit de list met teBezoekenSteden
                     sorteerSteden(teBezoekenSteden, huidigeStad);                                   // sorteer de steden aan de hand van nieuwe huidige stad
-                    tijdVanKortstePad = 0;                                                          // reset de tijd van pad
+                    tijdVanKortstePad = 0;                                                          // reset de orgineleRouteTijd van snelste
                     stadIndex = -1;                                                                 // reset de stadIndex
 
                     // check of huideTourPad al langer duurt als korsteTourPad
@@ -80,18 +80,19 @@ public class StedenTourAlgoritmeImpl implements StedenTourAlgoritme, Debuggable 
             // zet huidigeTourTijd als korsteTourPad nog 0 is of als huidigeTourTijd kleiner is
             if (kortsteTourTijd == 0 || huidigeTourTijd < kortsteTourTijd) {
                 kortsteTourTijd = huidigeTourTijd;
-                stedenKortst = new ArrayList<>(stedenHuidig);                                       // kopieer de lijst met huidge steden in de lijst van korste
+                this.stedenKortst = new ArrayList<>(stedenHuidig);                                  // kopieer de lijst met huidge steden in de lijst van korste
             }
         }
-        stopTime = System.currentTimeMillis();
-        System.out.println("Route gevonden in: " + (stopTime - startTime));
-        System.out.println("Aantal paden berekend: " + aantalBerekendePaden);
-        System.out.println("Kost van het pad: " + kortsteTourTijd);
-        System.out.println("----------------------------------------------------");
-        debug.debugSteden(kaart, stedenKortst);                                                     // set debugger
+        // optimaliseer de gevonden route
+        optimaliseerRoute(this.stedenKortst);
+
+        // print route info
+        printRouteInfo();
+
+        debug.debugSteden(kaart, this.stedenKortst);                                                // set debugger
 
         // return de lijst met steden
-        return stedenKortst;
+        return this.stedenKortst;
     }
 
     // sorteer de lijst met steden aan de hand van coordinaten van dichtstbij naar verste weg
@@ -122,5 +123,75 @@ public class StedenTourAlgoritmeImpl implements StedenTourAlgoritme, Debuggable 
     @Override
     public void setDebugger(Debugger debugger) {
         this.debug = debugger;
+    }
+
+    // optimaliseert de route
+    public void optimaliseerRoute(ArrayList<Stad> steden) {
+        ArrayList<Stad> nieuweStedenList;
+        boolean b = false;
+        for (int i = 0; i < steden.size() - 1; i++) {
+            for (int k = i + 1; k < steden.size(); k++) {
+
+                // verwissel de steden van plaats in de array
+                nieuweStedenList = new ArrayList<>(swapSteden(steden, i, k));
+
+                // bereken de nieuwe tijd
+                int nieuweTijd = berekenTijd(nieuweStedenList);
+
+                // als nieuwe tijd korter is dan oude tijd, sla deze op
+                if (nieuweTijd < kortsteTourTijd) {
+                    this.stedenKortst = new ArrayList<>(nieuweStedenList);
+                    this.kortsteTourTijd = nieuweTijd;
+                    b = true;                                                                       // true als route korter is geworden
+                }
+            }
+        }
+        // als b true is, optimaliseer nogmaals
+        if (b == true) {
+            optimaliseerRoute(this.stedenKortst);
+        }
+    }
+
+    // maakt een nieuwe List van steden met daarin omgewisselde steden
+    public ArrayList<Stad> swapSteden(ArrayList<Stad> steden, int i, int k) {
+        ArrayList<Stad> nieuweStedenList = new ArrayList<>();
+        // add alle steden die voor index i zitten in normale volgorde 
+        for (int j = 0; j < i; j++) {
+            nieuweStedenList.add(steden.get(j));
+        }
+        // add alle steden tussen i en k in omgekeerde volgorde
+        int value = k;
+        while (value >= i) {
+            nieuweStedenList.add(steden.get(value));
+            value--;
+        }
+        // add alle steden die na index k komen in normale volgorde
+        int value2 = k + 1;
+        while (value2 < steden.size()) {
+            nieuweStedenList.add(steden.get(value2));
+            value2++;
+        }
+        // return nieuwe list met steden
+        return nieuweStedenList;
+    }
+
+    // bereken de totale tourtijd
+    public int berekenTijd(ArrayList<Stad> steden) {
+        int routeTijd = 0;
+        SnelstePadAlgoritmeImpl snelste = new SnelstePadAlgoritmeImpl();
+        for (int i = 0; i < steden.size() - 1; i++) {
+            Pad pad = snelste.bereken(map, steden.get(i).getCoordinaat(), steden.get(i + 1).getCoordinaat());
+            routeTijd = routeTijd + pad.getTotaleTijd();
+        }
+        // return de tourtijd
+        return routeTijd;
+    }
+
+    // print tijd van de route en tijd voor het maken van de route
+    public void printRouteInfo() {
+        stopTime = System.currentTimeMillis();
+        System.out.println("Route gevonden in: " + (stopTime - startTime) + "ms");
+        System.out.println("Kosten van het pad: " + kortsteTourTijd);
+        System.out.println("----------------------------------------------------");
     }
 }

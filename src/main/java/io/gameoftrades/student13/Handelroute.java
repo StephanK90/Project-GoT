@@ -14,7 +14,6 @@ import io.gameoftrades.model.markt.Handel;
  */
 public class Handelroute {
 
-    private final SnelstePadAlgoritmeImpl snelstePad = new SnelstePadAlgoritmeImpl();           // snelstepadalgoritme om pad tussen de 2 steden te berekenen
     private final Pad padTussenSteden;                                                          // het pad tussen de 2 steden
     private Pad padNaarBegin;                                                                   // het pad naar de stad met de aanbod
     private final Handel aanbod;                                                                // de aanbod
@@ -25,6 +24,7 @@ public class Handelroute {
     public Handelroute(Kaart kaart, Handel aanbod, Handel vraag) {
         this.aanbod = aanbod;
         this.vraag = vraag;
+        SnelstePadAlgoritmeImpl snelstePad = new SnelstePadAlgoritmeImpl();
         this.padTussenSteden = snelstePad.bereken(kaart, aanbod.getStad().getCoordinaat(), vraag.getStad().getCoordinaat());
     }
 

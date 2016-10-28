@@ -19,6 +19,7 @@ import java.util.ArrayList;
  */
 public class HandelsplanAlgoritmeImpl implements HandelsplanAlgoritme {
 
+    private Handelsplan handelsplan;
     private ArrayList<Handelroute> handelroutes;                                                // lijst waar alle handelroutes in worden opgeslagen
 
     @Override
@@ -65,8 +66,12 @@ public class HandelsplanAlgoritmeImpl implements HandelsplanAlgoritme {
             positie = verkoop.voerUit(positie);
             acties.add(verkoop);
         }
+
+        // maak handelsplan
+        handelsplan = new Handelsplan(acties);
+
         // return het handelsplan
-        return new Handelsplan(acties);
+        return handelsplan;
     }
 
     // maak alle handel routes die winst opleveren
@@ -102,7 +107,7 @@ public class HandelsplanAlgoritmeImpl implements HandelsplanAlgoritme {
             huidig.setPadNaarBegin(pad);
 
             // check of route mogelijk is
-            if (positie.isActieBeschikbaar(huidig.getRouteTijd() + 2)) {
+            if (positie.isActieBeschikbaar(huidig.getRouteTijd())) {
 
                 // bereken handelscore voor huidige route
                 double handelScore = huidig.berekenHandelScore(positie.getKapitaal(), positie.getRuimte());
