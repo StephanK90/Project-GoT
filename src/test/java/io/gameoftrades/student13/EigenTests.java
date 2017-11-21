@@ -109,6 +109,5 @@ public class EigenTests {
 
         // check of afstand klopt
         assertEquals(12, afstand);
-
     }
 }
